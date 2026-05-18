@@ -10,10 +10,12 @@ const adUnitId = __DEV__
   ? TestIds.INTERSTITIAL
   : GAME_CONFIG.ADMOB_INTERSTITIAL_ID;
 
+// Contador global — persiste entre pantallas
+let gamesPlayed = 0;
+const interstitial = InterstitialAd.createForAdRequest(adUnitId);
+
 export function useInterstitialAd() {
-  const interstitial = useRef(InterstitialAd.createForAdRequest(adUnitId)).current;
   const [loaded, setLoaded] = useState(false);
-  const gamesPlayedRef = useRef(0);
 
   useEffect(() => {
     const unsubscribeLoaded = interstitial.addAdEventListener(AdEventType.LOADED, () => {
@@ -21,7 +23,7 @@ export function useInterstitialAd() {
     });
     const unsubscribeClosed = interstitial.addAdEventListener(AdEventType.CLOSED, () => {
       setLoaded(false);
-      interstitial.load(); // precarga el siguiente
+      interstitial.load();
     });
 
     interstitial.load();
@@ -30,12 +32,12 @@ export function useInterstitialAd() {
       unsubscribeLoaded();
       unsubscribeClosed();
     };
-  }, [interstitial]);
+  }, []);
 
   const showAdIfReady = () => {
-    gamesPlayedRef.current += 1;
-    if (gamesPlayedRef.current >= GAME_CONFIG.GAMES_BEFORE_AD && loaded) {
-      gamesPlayedRef.current = 0;
+    gamesPlayed += 1;
+    if (gamesPlayed >= GAME_CONFIG.GAMES_BEFORE_AD && loaded) {
+      gamesPlayed = 0;
       interstitial.show();
     }
   };

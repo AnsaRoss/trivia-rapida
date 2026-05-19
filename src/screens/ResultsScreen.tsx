@@ -33,7 +33,7 @@ function getResultMessage(pct: number) {
 }
 
 export default function ResultsScreen({ navigation, route }: Props) {
-  const { score, correctAnswers, totalQuestions, category } = route.params;
+  const { score, correctAnswers, totalQuestions, category, wrongAnswers } = route.params;
   const percentage = Math.round((correctAnswers / totalQuestions) * 100);
   const { showAdIfReady } = useInterstitialAd();
 
@@ -81,6 +81,16 @@ export default function ResultsScreen({ navigation, route }: Props) {
         >
           <Text style={styles.buttonTextPrimary}>🔄  Jugar de nuevo</Text>
         </TouchableOpacity>
+
+        {wrongAnswers.length > 0 && (
+          <TouchableOpacity
+            style={[styles.button, styles.buttonReview]}
+            onPress={() => navigation.navigate('ReviewAnswers', { wrongAnswers })}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.buttonTextReview}>📋  Ver respuestas correctas ({wrongAnswers.length})</Text>
+          </TouchableOpacity>
+        )}
 
         <TouchableOpacity
           style={[styles.button, styles.buttonSecondary]}
@@ -187,6 +197,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#0f3460',
   },
+  buttonReview: {
+    backgroundColor: '#16213e',
+    borderWidth: 1,
+    borderColor: '#e94560',
+  },
   buttonOutline: {
     backgroundColor: 'transparent',
     borderWidth: 1,
@@ -201,6 +216,11 @@ const styles = StyleSheet.create({
     color: '#e2e2e2',
     fontSize: 16,
     fontWeight: '600',
+  },
+  buttonTextReview: {
+    color: '#e94560',
+    fontSize: 16,
+    fontWeight: '700',
   },
   buttonTextOutline: {
     color: '#a8a8b3',

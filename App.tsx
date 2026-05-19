@@ -8,6 +8,7 @@ import CategorySelectScreen from './src/screens/CategorySelectScreen';
 import GameScreen from './src/screens/GameScreen';
 import ResultsScreen from './src/screens/ResultsScreen';
 import HighScoresScreen from './src/screens/HighScoresScreen';
+import ReviewAnswersScreen from './src/screens/ReviewAnswersScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -47,6 +48,11 @@ export default function App() {
           name="HighScores"
           component={HighScoresScreen}
           options={{ title: 'Puntajes' }}
+        />
+        <Stack.Screen
+          name="ReviewAnswers"
+          component={ReviewAnswersScreen}
+          options={{ title: 'Respuestas correctas' }}
         />
       </Stack.Navigator>
     </NavigationContainer>

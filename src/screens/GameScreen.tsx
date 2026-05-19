@@ -10,10 +10,11 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
-import { RootStackParamList } from '../types/navigation';
+import { RootStackParamList, WrongAnswer } from '../types/navigation';
 import { getQuestions, calculateScore } from '../utils/gameUtils';
 import { GAME_CONFIG } from '../config/game.config';
 import { Question } from '../data/questions_es';
+import { useGameSounds } from '../hooks/useGameSounds';
 
 type Props = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'Game'>;
@@ -28,11 +29,13 @@ export default function GameScreen({ navigation, route }: Props) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [correctAnswers, setCorrectAnswers] = useState(0);
+  const [wrongAnswers, setWrongAnswers] = useState<WrongAnswer[]>([]);
   const [timeLeft, setTimeLeft] = useState(GAME_CONFIG.QUESTION_TIMER_SECONDS);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [answerState, setAnswerState] = useState<AnswerState>('unanswered');
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const timerWidth = useRef(new Animated.Value(1)).current;
+  const { playCorrect, playWrong } = useGameSounds();
 
   const currentQuestion = questions[currentIndex];
   const isLastQuestion = currentIndex === questions.length - 1;
@@ -44,6 +47,7 @@ export default function GameScreen({ navigation, route }: Props) {
         correctAnswers,
         totalQuestions: questions.length,
         category,
+        wrongAnswers,
       });
     } else {
       setCurrentIndex((i) => i + 1);
@@ -72,6 +76,17 @@ export default function GameScreen({ navigation, route }: Props) {
         if (prev <= 1) {
           clearInterval(timerRef.current!);
           setAnswerState('wrong'); // tiempo agotado = respuesta incorrecta
+          setWrongAnswers((prev) => [
+            ...prev,
+            {
+              question: currentQuestion.question,
+              options: currentQuestion.options,
+              correctIndex: currentQuestion.correctIndex,
+              selectedIndex: null,
+              category: currentQuestion.category,
+            },
+          ]);
+          playWrong();
           setTimeout(goToNext, 1200);
           return 0;
         }
@@ -97,6 +112,19 @@ export default function GameScreen({ navigation, route }: Props) {
       const points = calculateScore(true, timeLeft);
       setScore((s) => s + points);
       setCorrectAnswers((c) => c + 1);
+      playCorrect();
+    } else {
+      setWrongAnswers((prev) => [
+        ...prev,
+        {
+          question: currentQuestion.question,
+          options: currentQuestion.options,
+          correctIndex: currentQuestion.correctIndex,
+          selectedIndex: index,
+          category: currentQuestion.category,
+        },
+      ]);
+      playWrong();
     }
 
     setTimeout(goToNext, 1200);
